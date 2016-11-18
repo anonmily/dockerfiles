@@ -1,0 +1,67 @@
+FROM debian:latest
+
+RUN apt-get -y update
+RUN apt-get -y install \
+	build-essential \
+	checkinstall \
+	cmake \
+	curl \
+	git \
+	wget \
+	unzip \
+	python \
+	python-pip \
+	python-tk \
+	python-numpy \
+	imagemagick \
+	cmake \
+	yasm \
+	gfortran \
+	libatlas-base-dev \
+	libgtk2.0-dev pkg-config \
+	libtbb2 \
+	libtbb-dev \
+	libjpeg-dev \
+	libpng-dev \
+	libtiff-dev \
+	libjasper-dev \
+	libswscale-dev \
+	libavcodec-dev \
+	libavformat-dev
+
+RUN pip install --upgrade pip
+RUN pip install \
+	boto \
+	cython \
+	numpy \
+	scipy \
+	matplotlib \
+	scikit-learn \
+	PyMySQL
+
+RUN git clone https://github.com/Itseez/opencv.git /tmp/opencv && \
+	cd /tmp/opencv && \
+	git checkout 3.1.0
+
+RUN  git clone https://github.com/Itseez/opencv_contrib.git /tmp/opencv_contrib && \
+	cd /tmp/opencv_contrib && \
+	git checkout 3.1.0
+
+RUN cd /tmp/opencv && \
+	mkdir build && \
+	cd build && \
+	cmake -D CMAKE_BUILD_TYPE=RELEASE \
+		-D CMAKE_INSTALL_PREFIX=/usr/local \
+		-D INSTALL_C_EXAMPLES=OFF \
+		-D PYTHON2_EXECUTABLE=/usr/bin/python \
+		-D PYTHON_INCLUDE_DIR=/usr/include/python2.7 \
+		-D PYTHON2_NUMPY_INCLUDE_DIRS=/usr/lib/python2.7/dist-packages/numpy/core/include \
+		-D INSTALL_PYTHON_EXAMPLES=ON \
+		-D OPENCV_EXTRA_MODULES_PATH=/tmp/opencv_contrib/modules \
+		-D BUILD_EXAMPLES=ON \
+		.. && \
+	make -j2 && \
+	make install
+
+RUN echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages:/scripts" >> ~/.profile && source ~/.profile
+
